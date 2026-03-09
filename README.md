@@ -27,7 +27,7 @@ A premium single-page web application designed to collect and manage client feed
    ```bash
    git clone Feedbacksystem
    ```
-   
+
    ```bash
    cd Feedbacksystem
    ```
@@ -39,10 +39,7 @@ A premium single-page web application designed to collect and manage client feed
 
 3. **Configure Environment Variables**:
    - Locate the `.env.example` file in the root directory.
-   - Create a new file named `.env` based on this template:
-     ```bash
-    .env.example .env
-     ```
+   - Create a new file named `.env` based on this template: `.env.example`
    - Open `.env` and fill in your actual SMTP credentials and recipient emails:
      - `EMAIL_USER`: Your SMTP email address.
      - `EMAIL_PASS`: Your app-specific password (if using Gmail, ensure App Passwords are enabled).
