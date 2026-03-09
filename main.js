@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.innerText = 'Submitting...';
 
         try {
-            const response = await fetch('http://localhost:3001/api/feedback', {
+            const response = await fetch('/api/feedback', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
