@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.innerText = 'Submitting...';
 
         try {
-            const response = await fetch('/api/feedback', {
+            const response = await fetch('https://marketing-team-feedback.onrender.com/api/feedback', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
