@@ -24,10 +24,12 @@ A premium single-page web application designed to collect and manage client feed
 - [Node.js](https://nodejs.org/) (v14 or higher recommended)
 - [npm](https://www.npmjs.com/)
 
+   ```bash
    git clone Feedbacksystem
-   ```
+
+   ```bash
    cd Feedbacksystem
-   ```
+
 
 2. **Install dependencies**:
    
