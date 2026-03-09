@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hogan Guards - Marketing Team Feedback</title>
+    <link rel="icon" type="image/png" href="hogan-favicon-transparent.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <nav class="container">
+            <div class="logo">
+                <img src="https://hoganguards.com/wp-content/uploads/2023/07/HoganGuards-2-scaled.webp"
+                    alt="Hogan Guards Logo">
+            </div>
+            <ul class="nav-links">
+                <li><a href="https://hoganguards.com/" target="_blank">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#feedback">Submit Feedback</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>Marketing Team Feedback</h1>
+                    <p>Help us maintain our excellence. Share your experience with our marketing team members and
+                        provide valuable ratings to help us improve our services.</p>
+                    <a href="#feedback" class="btn btn-primary">Give Feedback</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="about">
+            <div class="container text-center">
+                <h2>About Hogan Guards</h2>
+                <p>With over four decades in business, we provide technology-driven security solutions backed by
+                    unmatched experience and expertise. We remain one of the most respected names in the industry and
+                    the preferred security services provider nationwide.</p>
+            </div>
+        </section>
+
+        <section id="feedback" class="feedback">
+            <div class="container">
+                <div class="feedback-card">
+                    <h2 class="text-center">Rate Our Team</h2>
+                    <form id="feedbackForm">
+                        <div class="form-group">
+                            <label for="memberName">Marketing Team Member Name</label>
+                            <input type="text" id="memberName" name="memberName"
+                                placeholder="Enter name of the representative" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="clientName">Client Name / Company</label>
+                            <input type="text" id="clientName" name="clientName" placeholder="Your name or company name"
+                                required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="numGuards">Number of Guards Required</label>
+                                <input type="number" id="numGuards" name="numGuards" min="1" placeholder="e.g. 5"
+                                    required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="commencementDate">Date of Job Commencement</label>
+                                <input type="date" id="commencementDate" name="commencementDate" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="clientEmail">Email Address</label>
+                            <input type="email" id="clientEmail" name="clientEmail" placeholder="yourname@example.com"
+                                required>
+                            <span id="emailError" class="error-text hidden">Invalid email address.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phoneNumber">Phone Number</label>
+                            <div class="phone-input">
+                                <select id="countryCode" name="countryCode">
+                                    <option value="+234" selected>Nigeria (+234)</option>
+                                    <option value="+1">USA (+1)</option>
+                                    <option value="+44">UK (+44)</option>
+                                    <option value="+233">Ghana (+233)</option>
+                                    <option value="+27">South Africa (+27)</option>
+                                    <option value="+91">India (+91)</option>
+                                    <option value="+86">China (+86)</option>
+                                    <option value="+971">UAE (+971)</option>
+                                    <option value="+254">Kenya (+254)</option>
+                                    <option value="+20">Egypt (+20)</option>
+                                    <!-- Simplified list, can be expanded -->
+                                </select>
+                                <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="8012345678" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Service Rating</label>
+                            <div class="star-rating" id="starRating">
+                                <span class="star" data-value="1">&#9733;</span>
+                                <span class="star" data-value="2">&#9733;</span>
+                                <span class="star" data-value="3">&#9733;</span>
+                                <span class="star" data-value="4">&#9733;</span>
+                                <span class="star" data-value="5">&#9733;</span>
+                            </div>
+                            <input type="hidden" id="ratingValue" name="rating" value="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="comments">Your Feedback</label>
+                            <textarea id="comments" name="comments" rows="4"
+                                placeholder="Tell us about your experience..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-submit" id="submitBtn" disabled>Submit Review</button>
+                    </form>
+                    <div id="responseMessage" class="hidden"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container text-center footer-links">
+            <p>All Copyright &copy; 2026 Hoganguards Limited | <a href="https://hoganguards.com/privacy-policy/"
+                    target="_blank">Privacy Policy</a> | <a href="https://hoganguards.com/terms-of-service/"
+                    target="_blank">Terms of Service</a></p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+
+</html>
