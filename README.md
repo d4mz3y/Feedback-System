@@ -26,13 +26,13 @@ A premium single-page web application designed to collect and manage client feed
 
    ```bash
    git clone Feedbacksystem
+   ```
 
-   ```bash
    cd Feedbacksystem
-
+   ```
 
 2. **Install dependencies**:
-   
+   ```bash
    npm install
    ```
 
@@ -40,7 +40,7 @@ A premium single-page web application designed to collect and manage client feed
    - Locate the `.env.example` file in the root directory.
    - Create a new file named `.env` based on this template:
      ```bash
-     cp .env.example .env
+    .env.example .env
      ```
    - Open `.env` and fill in your actual SMTP credentials and recipient emails:
      - `EMAIL_USER`: Your SMTP email address.
