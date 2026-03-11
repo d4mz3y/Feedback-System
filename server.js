@@ -3,9 +3,35 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
 const path = require('path');
+const mongoose = require('mongoose');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// MongoDB Connection
+const MONGODB_URI = process.env.MONGODB_URI;
+if (MONGODB_URI) {
+    mongoose.connect(MONGODB_URI)
+        .then(() => console.log('Connected to MongoDB Atlas'))
+        .catch(err => console.error('MongoDB connection error:', err));
+} else {
+    console.warn('MONGODB_URI not found in environment variables. Database storage is disabled.');
+}
+
+// Define Feedback Schema
+const feedbackSchema = new mongoose.Schema({
+    memberName: String,
+    clientName: String,
+    numGuards: Number,
+    commencementDate: String,
+    clientEmail: String,
+    phoneNumber: String,
+    rating: Number,
+    comments: String,
+    timestamp: { type: Date, default: Date.now }
+});
+
+const Feedback = mongoose.model('Feedback', feedbackSchema);
 
 // Middleware
 app.use(cors());
@@ -44,27 +70,34 @@ app.post('/api/feedback', async (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const newReview = {
+    const feedbackData = {
         memberName,
         clientName,
         numGuards,
         commencementDate,
         clientEmail,
         phoneNumber,
-        rating,
-        comments,
-        timestamp: new Date().toLocaleString()
+        rating: Number(rating),
+        comments
     };
 
-    // Send Email Notification
     try {
+        // 1. Save to MongoDB if URI is provided
+        if (MONGODB_URI) {
+            const newFeedback = new Feedback(feedbackData);
+            await newFeedback.save();
+            console.log('Feedback saved to MongoDB');
+        }
+
+        // 2. Send Email Notification
         console.log('Attempting to send email...');
-        await sendEmailNotification(newReview);
+        await sendEmailNotification({ ...feedbackData, timestamp: new Date().toLocaleString() });
         console.log('Email sent successfully');
-        res.status(200).json({ message: 'Feedback received and email sent' });
+
+        res.status(200).json({ message: 'Feedback stored and email sent' });
     } catch (error) {
-        console.error('Email Error:', error);
-        res.status(200).json({ message: 'Feedback received, but email notification failed' });
+        console.error('Error processing feedback:', error);
+        res.status(500).json({ error: 'Failed to process feedback. Please try again later.' });
     }
 });
 
