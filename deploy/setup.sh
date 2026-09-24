@@ -5,7 +5,7 @@ set -euo pipefail
 
 DOMAIN="${1:-}"
 ZEROTIER_NETWORK_ID="${2:-}"
-REPO_URL="git@github.com:d4mz3y/Feedback-System.git"
+REPO_URL="https://github.com/d4mz3y/Feedback-System.git"
 APP_DIR="$HOME/Feedback-System"
 
 if [ -z "$DOMAIN" ]; then
@@ -70,7 +70,7 @@ sudo nginx -t
 sudo systemctl reload nginx
 
 echo "==> Requesting a TLS certificate for $DOMAIN"
-echo "    (make sure DNS for $DOMAIN already points at this instance's public IP first)"
-sudo certbot --nginx -d "$DOMAIN"
+CERT_EMAIL=$(grep '^EMAIL_USER=' .env | cut -d= -f2-)
+sudo certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --redirect -m "$CERT_EMAIL"
 
 echo "==> Done. https://$DOMAIN should now be live."
