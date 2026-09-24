@@ -16,7 +16,15 @@ public subnet.
      home/mobile IP rotates.
 2. Create a new Always Free instance in the existing public subnet, attaching
    `feedback-system-nsg` at creation time, with a public IPv4 address assigned.
-3. Point a DNS A record (e.g. `feedback.hoganguards.com`) at the instance's public IP.
+3. **Domain**: using [nip.io](https://nip.io) instead of a `hoganguards.com` DNS record
+   — no DNS access needed, and Let's Encrypt issues a real certificate for it since
+   it's a genuine (auto-generated) DNS name. Once the instance has its public IP, the
+   domain is just `<public-ip-with-dots-replaced-by-dashes-or-dots>.nip.io` — nip.io
+   accepts the IP with dots as-is, e.g. public IP `192.0.2.10` → domain
+   `192.0.2.10.nip.io`. Nothing to configure; it resolves automatically.
+   Swappable later: once someone with access to `hoganguards.com`'s DNS adds a real
+   `feedback.hoganguards.com` A record, switch over by rerunning
+   `sudo certbot --nginx -d feedback.hoganguards.com` on the server — no redeploy needed.
 4. Add your SSH key to the instance (cloud-init `ssh_authorized_keys`, or via console).
 
 ### First login (before ZeroTier is joined)
@@ -35,7 +43,7 @@ git clone git@github.com:d4mz3y/Feedback-System.git
 cd Feedback-System
 cp .env.example .env
 nano .env   # fill in real EMAIL_USER, EMAIL_PASS, RECIPIENT_EMAILS, MONGODB_URI
-./deploy/setup.sh feedback.hoganguards.com <ZEROTIER_NETWORK_ID>
+./deploy/setup.sh <PUBLIC_IP>.nip.io <ZEROTIER_NETWORK_ID>
 ```
 
 The script joins the same ZeroTier network as `hg-attendance-prod` (approve the new
@@ -51,7 +59,7 @@ future admin access over ZeroTier.
 ## 3. Verify
 
 ```bash
-curl -I https://feedback.hoganguards.com
+curl -I https://<PUBLIC_IP>.nip.io
 ```
 
 Submit a test entry through the form and confirm the notification email arrives.

@@ -3,10 +3,16 @@
 # Run as a sudo-capable user. Review before running.
 set -euo pipefail
 
-DOMAIN="${1:-feedback.hoganguards.com}"
+DOMAIN="${1:-}"
 ZEROTIER_NETWORK_ID="${2:-}"
 REPO_URL="git@github.com:d4mz3y/Feedback-System.git"
 APP_DIR="$HOME/Feedback-System"
+
+if [ -z "$DOMAIN" ]; then
+    echo "Usage: $0 <domain> [zerotier-network-id]"
+    echo "  e.g.: $0 192.0.2.10.nip.io <NETWORK_ID>"
+    exit 1
+fi
 
 echo "==> Installing ZeroTier (for admin SSH access — no public port 22 on this box)"
 if ! command -v zerotier-cli >/dev/null; then
