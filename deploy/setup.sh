@@ -4,8 +4,31 @@
 set -euo pipefail
 
 DOMAIN="${1:-feedback.hoganguards.com}"
+ZEROTIER_NETWORK_ID="${2:-}"
 REPO_URL="git@github.com:d4mz3y/Feedback-System.git"
 APP_DIR="$HOME/Feedback-System"
+
+echo "==> Installing ZeroTier (for admin SSH access — no public port 22 on this box)"
+if ! command -v zerotier-cli >/dev/null; then
+    curl -s https://install.zerotier.com | sudo bash
+fi
+if [ -n "$ZEROTIER_NETWORK_ID" ]; then
+    sudo zerotier-cli join "$ZEROTIER_NETWORK_ID"
+    echo "Joined $ZEROTIER_NETWORK_ID — approve this device in ZeroTier Central, same as hg-attendance-prod was."
+else
+    echo "No ZeroTier network ID passed as the 2nd argument — join manually:"
+    echo "    sudo zerotier-cli join <NETWORK_ID>"
+fi
+
+echo "==> Opening 80/443 in the host firewall (NSG allows them, but Ubuntu's own firewall blocks by default)"
+if command -v ufw >/dev/null && sudo ufw status | grep -q "Status: active"; then
+    sudo ufw allow 80/tcp
+    sudo ufw allow 443/tcp
+else
+    sudo iptables -C INPUT -p tcp --dport 80 -j ACCEPT 2>/dev/null || sudo iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+    sudo iptables -C INPUT -p tcp --dport 443 -j ACCEPT 2>/dev/null || sudo iptables -I INPUT -p tcp --dport 443 -j ACCEPT
+    sudo netfilter-persistent save 2>/dev/null || sudo sh -c 'iptables-save > /etc/iptables/rules.v4' 2>/dev/null || true
+fi
 
 echo "==> Installing Docker"
 if ! command -v docker >/dev/null; then
