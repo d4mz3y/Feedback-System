@@ -1,0 +1,10 @@
+services:
+  feedback-app:
+    build: .
+    container_name: feedback-system-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      # Bind to localhost only — nginx handles TLS and public exposure.
+      - "127.0.0.1:3001:3001"
