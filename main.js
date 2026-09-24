@@ -1,43 +1,29 @@
 document.addEventListener('DOMContentLoaded', () => {
     const feedbackForm = document.getElementById('feedbackForm');
-    const stars = document.querySelectorAll('.star');
-    const ratingInput = document.getElementById('ratingValue');
     const responseMessage = document.getElementById('responseMessage');
     const submitBtn = document.getElementById('submitBtn');
 
-    // New Fields
     const emailInput = document.getElementById('clientEmail');
     const emailError = document.getElementById('emailError');
     const inputs = feedbackForm.querySelectorAll('input[required], textarea[required]');
 
-    // Star Rating Logic
-    stars.forEach(star => {
-        star.addEventListener('click', () => {
-            const value = star.getAttribute('data-value');
-            ratingInput.value = value;
-            updateStars(value);
+    const howFoundOutOther = document.getElementById('howFoundOutOther');
+    const howFoundOutRadios = feedbackForm.querySelectorAll('input[name="howFoundOut"]');
+
+    // Show the "please specify" field only when "Others" is selected
+    howFoundOutRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.value === 'Others' && radio.checked) {
+                howFoundOutOther.classList.remove('hidden');
+                howFoundOutOther.required = true;
+            } else if (radio.checked) {
+                howFoundOutOther.classList.add('hidden');
+                howFoundOutOther.required = false;
+                howFoundOutOther.value = '';
+            }
             validateForm();
         });
-
-        star.addEventListener('mouseover', () => {
-            const value = star.getAttribute('data-value');
-            updateStars(value);
-        });
-
-        star.addEventListener('mouseleave', () => {
-            updateStars(ratingInput.value);
-        });
     });
-
-    function updateStars(value) {
-        stars.forEach(star => {
-            if (star.getAttribute('data-value') <= value) {
-                star.classList.add('active');
-            } else {
-                star.classList.remove('active');
-            }
-        });
-    }
 
     // Email Validation Logic
     emailInput.addEventListener('input', () => {
@@ -67,14 +53,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Check all required fields
         inputs.forEach(input => {
-            if (!input.value.trim()) isValid = false;
+            if (input.type === 'radio') {
+                if (!feedbackForm.querySelector(`input[name="${input.name}"]:checked`)) isValid = false;
+            } else if (!input.value.trim()) {
+                isValid = false;
+            }
         });
 
         // Check email specifically
         if (!validateEmail(emailInput.value)) isValid = false;
-
-        // Check star rating
-        if (ratingInput.value === "0") isValid = false;
 
         submitBtn.disabled = !isValid;
     }
@@ -83,15 +70,20 @@ document.addEventListener('DOMContentLoaded', () => {
     feedbackForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        const howFoundOutChecked = feedbackForm.querySelector('input[name="howFoundOut"]:checked');
+
         const formData = {
-            memberName: document.getElementById('memberName').value,
             clientName: document.getElementById('clientName').value,
-            numGuards: document.getElementById('numGuards').value,
-            commencementDate: document.getElementById('commencementDate').value,
+            clientAddress: document.getElementById('clientAddress').value,
             clientEmail: emailInput.value,
             phoneNumber: document.getElementById('countryCode').value + document.getElementById('phoneNumber').value,
-            rating: ratingInput.value,
-            comments: document.getElementById('comments').value
+            numGuards: document.getElementById('numGuards').value,
+            deploymentDate: document.getElementById('deploymentDate').value,
+            howFoundOut: howFoundOutChecked ? howFoundOutChecked.value : '',
+            howFoundOutOther: howFoundOutOther.value,
+            referredByStaff: document.getElementById('referredByStaff').value,
+            deploymentOfficer: document.getElementById('deploymentOfficer').value,
+            generalComment: document.getElementById('generalComment').value
         };
 
         submitBtn.disabled = true;
@@ -107,10 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                showMessage("Thank you! Your feedback has been submitted successfully.", "success");
+                showMessage("Thank you! Your KYC form has been submitted successfully.", "success");
                 feedbackForm.reset();
-                updateStars(0);
-                ratingInput.value = "0";
+                howFoundOutOther.classList.add('hidden');
+                howFoundOutOther.required = false;
                 validateForm();
             } else {
                 throw new Error('Server returned an error');
@@ -119,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error:', error);
             showMessage("Oops! Something went wrong. Please try again later.", "error");
         } finally {
-            submitBtn.innerText = 'Submit Review';
+            submitBtn.innerText = 'Submit KYC Form';
             validateForm();
         }
     });

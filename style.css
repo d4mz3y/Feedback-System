@@ -236,17 +236,23 @@ nav {
     border-color: var(--primary-color) !important;
 }
 
-/* Star Rating */
-.star-rating {
-    font-size: 2rem;
-    color: #ddd;
-    cursor: pointer;
+/* Radio Group */
+.radio-group {
     display: flex;
-    gap: 5px;
+    flex-wrap: wrap;
+    gap: 10px 20px;
 }
 
-.star.active {
-    color: #ffc107;
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.radio-option input {
+    width: auto;
 }
 
 /* Footer */

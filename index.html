@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hogan Guards - Marketing Team Feedback</title>
+    <title>Hogan Guards - Client KYC Form</title>
     <link rel="icon" type="image/png" href="hogan-favicon-transparent.png">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,7 +22,7 @@
             <ul class="nav-links">
                 <li><a href="https://hoganguards.com/" target="_blank">Home</a></li>
                 <li><a href="#about">About</a></li>
-                <li><a href="#feedback">Submit Feedback</a></li>
+                <li><a href="#kyc-form">Submit KYC Form</a></li>
             </ul>
         </nav>
     </header>
@@ -31,10 +31,10 @@
         <section id="hero" class="hero">
             <div class="container">
                 <div class="hero-content">
-                    <h1>Marketing Team Feedback</h1>
-                    <p>Help us maintain our excellence. Share your experience with our marketing team members and
-                        provide valuable ratings to help us improve our services.</p>
-                    <a href="#feedback" class="btn btn-primary">Give Feedback</a>
+                    <h1>Client KYC Form</h1>
+                    <p>Please provide your details below so we can properly onboard you and deploy your
+                        security guards.</p>
+                    <a href="#kyc-form" class="btn btn-primary">Fill KYC Form</a>
                 </div>
             </div>
         </section>
@@ -48,38 +48,25 @@
             </div>
         </section>
 
-        <section id="feedback" class="feedback">
+        <section id="kyc-form" class="feedback">
             <div class="container">
                 <div class="feedback-card">
-                    <h2 class="text-center">Rate Our Team</h2>
+                    <h2 class="text-center">Know Your Client (KYC) Form</h2>
                     <form id="feedbackForm">
                         <div class="form-group">
-                            <label for="memberName">Marketing Team Member Name</label>
-                            <input type="text" id="memberName" name="memberName"
-                                placeholder="Enter name of the representative" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="clientName">Client Name / Company</label>
-                            <input type="text" id="clientName" name="clientName" placeholder="Your name or company name"
+                            <label for="clientName">Name of Client</label>
+                            <input type="text" id="clientName" name="clientName" placeholder="Business or individual name"
                                 required>
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="numGuards">Number of Guards Required</label>
-                                <input type="number" id="numGuards" name="numGuards" min="1" placeholder="e.g. 5"
-                                    required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="commencementDate">Date of Job Commencement</label>
-                                <input type="date" id="commencementDate" name="commencementDate" required>
-                            </div>
+                        <div class="form-group">
+                            <label for="clientAddress">Address</label>
+                            <input type="text" id="clientAddress" name="clientAddress" placeholder="Deployment address"
+                                required>
                         </div>
 
                         <div class="form-group">
-                            <label for="clientEmail">Email Address</label>
+                            <label for="clientEmail">Official Email</label>
                             <input type="email" id="clientEmail" name="clientEmail" placeholder="yourname@example.com"
                                 required>
                             <span id="emailError" class="error-text hidden">Invalid email address.</span>
@@ -105,25 +92,50 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label>Service Rating</label>
-                            <div class="star-rating" id="starRating">
-                                <span class="star" data-value="1">&#9733;</span>
-                                <span class="star" data-value="2">&#9733;</span>
-                                <span class="star" data-value="3">&#9733;</span>
-                                <span class="star" data-value="4">&#9733;</span>
-                                <span class="star" data-value="5">&#9733;</span>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="numGuards">Number of Guards</label>
+                                <input type="number" id="numGuards" name="numGuards" min="1" placeholder="e.g. 5"
+                                    required>
                             </div>
-                            <input type="hidden" id="ratingValue" name="rating" value="0">
+
+                            <div class="form-group">
+                                <label for="deploymentDate">Date of Deployment</label>
+                                <input type="date" id="deploymentDate" name="deploymentDate" required>
+                            </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="comments">Your Feedback</label>
-                            <textarea id="comments" name="comments" rows="4"
-                                placeholder="Tell us about your experience..." required></textarea>
+                            <label>How did you find out about HoganGuards?</label>
+                            <div class="radio-group" id="howFoundOutGroup">
+                                <label class="radio-option"><input type="radio" name="howFoundOut" value="Advert" required> Advert</label>
+                                <label class="radio-option"><input type="radio" name="howFoundOut" value="Website" required> Website</label>
+                                <label class="radio-option"><input type="radio" name="howFoundOut" value="Referred by Client" required> Referred by Client</label>
+                                <label class="radio-option"><input type="radio" name="howFoundOut" value="HoganGuards Social Media" required> HoganGuards Social Media</label>
+                                <label class="radio-option"><input type="radio" name="howFoundOut" value="Others" required> Others</label>
+                            </div>
+                            <input type="text" id="howFoundOutOther" name="howFoundOutOther"
+                                placeholder="Please specify" class="hidden" style="margin-top: 10px;">
                         </div>
 
-                        <button type="submit" class="btn btn-submit" id="submitBtn" disabled>Submit Review</button>
+                        <div class="form-group">
+                            <label for="referredByStaff">Name of Staff Who Referred You (if applicable)</label>
+                            <input type="text" id="referredByStaff" name="referredByStaff" placeholder="Optional">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="deploymentOfficer">Name of Deployment Officer</label>
+                            <input type="text" id="deploymentOfficer" name="deploymentOfficer"
+                                placeholder="Enter name of the deployment officer" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="generalComment">General Comment on Deployment</label>
+                            <textarea id="generalComment" name="generalComment" rows="4"
+                                placeholder="Any additional notes about the deployment..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-submit" id="submitBtn" disabled>Submit KYC Form</button>
                     </form>
                     <div id="responseMessage" class="hidden"></div>
                 </div>

@@ -23,16 +23,19 @@ if (MONGODB_URI) {
     console.warn('MONGODB_URI not found in environment variables. Database storage is disabled.');
 }
 
-// Define Feedback Schema
+// Define KYC Schema
 const feedbackSchema = new mongoose.Schema({
-    memberName: String,
     clientName: String,
+    clientAddress: String,
     numGuards: Number,
-    commencementDate: String,
+    deploymentDate: String,
     clientEmail: String,
     phoneNumber: String,
-    rating: Number,
-    comments: String,
+    howFoundOut: String,
+    howFoundOutOther: String,
+    referredByStaff: String,
+    deploymentOfficer: String,
+    generalComment: String,
     timestamp: { type: Date, default: Date.now }
 });
 
@@ -80,29 +83,36 @@ const feedbackLimiter = rateLimit({
 app.post('/api/feedback', feedbackLimiter, async (req, res) => {
     console.log('Received feedback payload:', req.body);
     const {
-        memberName,
         clientName,
+        clientAddress,
         numGuards,
-        commencementDate,
+        deploymentDate,
         clientEmail,
         phoneNumber,
-        rating,
-        comments
+        howFoundOut,
+        howFoundOutOther,
+        referredByStaff,
+        deploymentOfficer,
+        generalComment
     } = req.body;
 
-    if (!memberName || !clientName || !rating || !comments || !clientEmail) {
+    if (!clientName || !clientAddress || !clientEmail || !phoneNumber || !numGuards
+        || !deploymentDate || !howFoundOut || !deploymentOfficer) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const feedbackData = {
-        memberName,
         clientName,
+        clientAddress,
         numGuards,
-        commencementDate,
+        deploymentDate,
         clientEmail,
         phoneNumber,
-        rating: Number(rating),
-        comments
+        howFoundOut,
+        howFoundOutOther,
+        referredByStaff,
+        deploymentOfficer,
+        generalComment
     };
 
     try {
@@ -148,64 +158,69 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const LOW_RATING_THRESHOLD = 2;
-
 async function sendEmailNotification(review) {
-    const isLowRating = review.rating <= LOW_RATING_THRESHOLD;
+    const howFoundOutDisplay = review.howFoundOut === 'Others' && review.howFoundOutOther
+        ? `Others — ${review.howFoundOutOther}`
+        : review.howFoundOut;
 
     const mailOptions = {
-        from: `"Hogan Guards Feedback" <${process.env.EMAIL_USER}>`,
+        from: `"Hogan Guards KYC" <${process.env.EMAIL_USER}>`,
         to: process.env.RECIPIENT_EMAILS,
-        subject: isLowRating
-            ? `⚠️ LOW RATING ALERT: ${review.memberName} (${review.rating}/5)`
-            : `New Marketing Feedback: ${review.memberName}`,
+        subject: `New Client KYC Submission: ${review.clientName}`,
         html: `
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #B5253C; border-radius: 10px; max-width: 600px;">
-                <h2 style="color: #113C63; margin-top: 0;">New Team Feedback Received</h2>
+                <h2 style="color: #113C63; margin-top: 0;">New Client KYC Submission</h2>
                 <hr style="border: 0; border-top: 2px solid #B5253C; margin-bottom: 20px;">
 
-                ${isLowRating ? `
-                <div style="background: #fdecea; border: 1px solid #B5253C; border-radius: 6px; padding: 12px 15px; margin-bottom: 20px;">
-                    <strong style="color: #B5253C;">⚠️ Low rating — please follow up with this client promptly.</strong>
-                </div>
-                ` : ''}
-
-                <h3 style="color: #B5253C; margin-bottom: 10px;">Marketing Representative Info</h3>
-                <p><strong>Representative Name:</strong> ${escapeHtml(review.memberName)}</p>
-
-                <h3 style="color: #B5253C; margin-bottom: 10px; margin-top: 20px;">Client & Job Details</h3>
+                <h3 style="color: #B5253C; margin-bottom: 10px;">Client Details</h3>
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr>
-                        <td style="padding: 5px 0;"><strong>Client Name:</strong></td>
+                        <td style="padding: 5px 0;"><strong>Name of Client:</strong></td>
                         <td>${escapeHtml(review.clientName)}</td>
                     </tr>
                     <tr>
-                        <td style="padding: 5px 0;"><strong>Email:</strong></td>
+                        <td style="padding: 5px 0;"><strong>Address:</strong></td>
+                        <td>${escapeHtml(review.clientAddress)}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px 0;"><strong>Official Email:</strong></td>
                         <td>${escapeHtml(review.clientEmail)}</td>
                     </tr>
                     <tr>
                         <td style="padding: 5px 0;"><strong>Phone:</strong></td>
                         <td>${escapeHtml(review.phoneNumber)}</td>
                     </tr>
+                </table>
+
+                <h3 style="color: #B5253C; margin-bottom: 10px; margin-top: 20px;">Deployment Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
                     <tr>
                         <td style="padding: 5px 0;"><strong>Number of Guards:</strong></td>
                         <td>${escapeHtml(review.numGuards || 'N/A')}</td>
                     </tr>
                     <tr>
-                        <td style="padding: 5px 0;"><strong>Commencement Date:</strong></td>
-                        <td>${escapeHtml(review.commencementDate || 'N/A')}</td>
+                        <td style="padding: 5px 0;"><strong>Date of Deployment:</strong></td>
+                        <td>${escapeHtml(review.deploymentDate || 'N/A')}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px 0;"><strong>Deployment Officer:</strong></td>
+                        <td>${escapeHtml(review.deploymentOfficer)}</td>
                     </tr>
                 </table>
 
-                <h3 style="color: #B5253C; margin-bottom: 10px; margin-top: 20px;">Service Feedback</h3>
-                <p><strong>Rating:</strong> ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)} (${review.rating}/5)</p>
-                <p><strong>Comments:</strong></p>
+                <h3 style="color: #B5253C; margin-bottom: 10px; margin-top: 20px;">How They Found HoganGuards</h3>
+                <p><strong>${escapeHtml(howFoundOutDisplay)}</strong></p>
+                ${review.referredByStaff ? `<p><strong>Referred by staff:</strong> ${escapeHtml(review.referredByStaff)}</p>` : ''}
+
+                ${review.generalComment ? `
+                <h3 style="color: #B5253C; margin-bottom: 10px; margin-top: 20px;">General Comment on Deployment</h3>
                 <div style="background: #f8f9fa; padding: 15px; border-left: 5px solid #B5253C; font-style: italic; color: #555;">
-                    "${escapeHtml(review.comments)}"
+                    "${escapeHtml(review.generalComment)}"
                 </div>
-                
+                ` : ''}
+
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                <p style="font-size: 0.8rem; color: #777;">Submitted securely via Hogan Guards Feedback Portal at: ${review.timestamp}</p>
+                <p style="font-size: 0.8rem; color: #777;">Submitted securely via Hogan Guards KYC Portal at: ${review.timestamp}</p>
             </div>
         `
     };
@@ -217,20 +232,18 @@ async function sendClientConfirmation(review) {
     const mailOptions = {
         from: `"Hogan Guards" <${process.env.EMAIL_USER}>`,
         to: review.clientEmail,
-        subject: 'Thank You for Your Feedback — Hogan Guards',
+        subject: 'Thank You for Your Submission — Hogan Guards',
         html: `
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #B5253C; border-radius: 10px; max-width: 600px;">
                 <h2 style="color: #113C63; margin-top: 0;">Thank You, ${escapeHtml(review.clientName)}!</h2>
                 <hr style="border: 0; border-top: 2px solid #B5253C; margin-bottom: 20px;">
 
-                <p>We've received your feedback regarding your experience with <strong>${escapeHtml(review.memberName)}</strong>, and we truly appreciate you taking the time to share it.</p>
+                <p>We've received your KYC details and will proceed with deploying your security guards as scheduled.</p>
 
-                <p><strong>Your Rating:</strong> ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)} (${review.rating}/5)</p>
-
-                <p>Your feedback helps us maintain the standard of service you expect from Hogan Guards.</p>
+                <p>Our team will be in touch if any further information is needed ahead of the deployment date.</p>
 
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                <p style="font-size: 0.8rem; color: #777;">Hogan Guards Marketing Team Feedback Portal</p>
+                <p style="font-size: 0.8rem; color: #777;">Hogan Guards Client KYC Portal</p>
             </div>
         `
     };
