@@ -9,6 +9,10 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Running behind an nginx reverse proxy — trust its X-Forwarded-For
+// so express-rate-limit can correctly identify client IPs.
+app.set('trust proxy', 1);
+
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI;
 if (MONGODB_URI) {
