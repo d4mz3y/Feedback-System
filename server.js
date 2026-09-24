@@ -127,29 +127,49 @@ app.post('/api/feedback', feedbackLimiter, async (req, res) => {
         console.error('Error sending email notification:', error);
     }
 
+    // 3. Send the client a confirmation — independent of the admin notification above.
+    try {
+        await sendClientConfirmation(feedbackData);
+        console.log('Client confirmation email sent');
+    } catch (error) {
+        console.error('Error sending client confirmation email:', error);
+    }
+
     res.status(200).json({ message: 'Feedback received' });
 });
 
+const transporter = nodemailer.createTransport({
+    host: 'smtp.dreamhost.com',
+    port: 465,
+    secure: true, // true for 465, false for other ports
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+const LOW_RATING_THRESHOLD = 2;
+
 async function sendEmailNotification(review) {
-    const transporter = nodemailer.createTransport({
-        host: 'smtp.dreamhost.com',
-        port: 465,
-        secure: true, // true for 465, false for other ports
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        }
-    });
+    const isLowRating = review.rating <= LOW_RATING_THRESHOLD;
 
     const mailOptions = {
         from: `"Hogan Guards Feedback" <${process.env.EMAIL_USER}>`,
         to: process.env.RECIPIENT_EMAILS,
-        subject: `New Marketing Feedback: ${review.memberName}`,
+        subject: isLowRating
+            ? `⚠️ LOW RATING ALERT: ${review.memberName} (${review.rating}/5)`
+            : `New Marketing Feedback: ${review.memberName}`,
         html: `
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #B5253C; border-radius: 10px; max-width: 600px;">
                 <h2 style="color: #113C63; margin-top: 0;">New Team Feedback Received</h2>
                 <hr style="border: 0; border-top: 2px solid #B5253C; margin-bottom: 20px;">
-                
+
+                ${isLowRating ? `
+                <div style="background: #fdecea; border: 1px solid #B5253C; border-radius: 6px; padding: 12px 15px; margin-bottom: 20px;">
+                    <strong style="color: #B5253C;">⚠️ Low rating — please follow up with this client promptly.</strong>
+                </div>
+                ` : ''}
+
                 <h3 style="color: #B5253C; margin-bottom: 10px;">Marketing Representative Info</h3>
                 <p><strong>Representative Name:</strong> ${escapeHtml(review.memberName)}</p>
 
@@ -186,6 +206,31 @@ async function sendEmailNotification(review) {
                 
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
                 <p style="font-size: 0.8rem; color: #777;">Submitted securely via Hogan Guards Feedback Portal at: ${review.timestamp}</p>
+            </div>
+        `
+    };
+
+    return transporter.sendMail(mailOptions);
+}
+
+async function sendClientConfirmation(review) {
+    const mailOptions = {
+        from: `"Hogan Guards" <${process.env.EMAIL_USER}>`,
+        to: review.clientEmail,
+        subject: 'Thank You for Your Feedback — Hogan Guards',
+        html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #B5253C; border-radius: 10px; max-width: 600px;">
+                <h2 style="color: #113C63; margin-top: 0;">Thank You, ${escapeHtml(review.clientName)}!</h2>
+                <hr style="border: 0; border-top: 2px solid #B5253C; margin-bottom: 20px;">
+
+                <p>We've received your feedback regarding your experience with <strong>${escapeHtml(review.memberName)}</strong>, and we truly appreciate you taking the time to share it.</p>
+
+                <p><strong>Your Rating:</strong> ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)} (${review.rating}/5)</p>
+
+                <p>Your feedback helps us maintain the standard of service you expect from Hogan Guards.</p>
+
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                <p style="font-size: 0.8rem; color: #777;">Hogan Guards Marketing Team Feedback Portal</p>
             </div>
         `
     };
