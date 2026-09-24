@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show the "please specify" field only when "Others" is selected
     howFoundOutRadios.forEach(radio => {
         radio.addEventListener('change', () => {
+            howFoundOutRadios.forEach(r => r.closest('.radio-option').classList.toggle('selected', r.checked));
+
             if (radio.value === 'Others' && radio.checked) {
                 howFoundOutOther.classList.remove('hidden');
                 howFoundOutOther.required = true;

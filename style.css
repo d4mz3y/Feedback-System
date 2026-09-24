@@ -239,20 +239,37 @@ nav {
 /* Radio Group */
 .radio-group {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px 20px;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .radio-option {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-weight: 400;
+    gap: 12px;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-weight: 500;
     cursor: pointer;
+    transition: var(--transition);
+}
+
+.radio-option:hover {
+    border-color: var(--secondary-color);
+    background: var(--light-bg);
+}
+
+.radio-option.selected {
+    border-color: var(--primary-color);
+    background: #fdecea;
 }
 
 .radio-option input {
-    width: auto;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+    cursor: pointer;
 }
 
 /* Footer */
