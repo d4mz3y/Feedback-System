@@ -307,4 +307,21 @@ footer {
     .nav-links {
         display: none;
     }
+
+    .feedback-card {
+        padding: 25px 20px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .phone-input {
+        flex-direction: column;
+    }
+
+    .phone-input select {
+        width: 100%;
+    }
 }
