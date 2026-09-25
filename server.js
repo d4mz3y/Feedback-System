@@ -23,7 +23,7 @@ if (MONGODB_URI) {
     console.warn('MONGODB_URI not found in environment variables. Database storage is disabled.');
 }
 
-// Define KYC Schema
+// Define Onboarding/Referral Schema
 const feedbackSchema = new mongoose.Schema({
     clientName: String,
     clientAddress: String,
@@ -97,8 +97,13 @@ app.post('/api/feedback', feedbackLimiter, async (req, res) => {
     } = req.body;
 
     if (!clientName || !clientAddress || !clientEmail || !phoneNumber || !numGuards
-        || !deploymentDate || !howFoundOut || !deploymentOfficer || !referredByStaff
-        || !generalComment) {
+        || !deploymentDate || !howFoundOut) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // A staff member is only relevant when the client says they were
+    // referred by one — not for Website, Advert, or the other options.
+    if (howFoundOut === 'Referred by Client' && !referredByStaff) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -165,12 +170,12 @@ async function sendEmailNotification(review) {
         : review.howFoundOut;
 
     const mailOptions = {
-        from: `"Hogan Guards KYC" <${process.env.EMAIL_USER}>`,
+        from: `"Hogan Guards Onboarding" <${process.env.EMAIL_USER}>`,
         to: process.env.RECIPIENT_EMAILS,
-        subject: `New Client KYC Submission: ${review.clientName}`,
+        subject: `New Client Onboarding Submission: ${review.clientName}`,
         html: `
             <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #B5253C; border-radius: 10px; max-width: 600px;">
-                <h2 style="color: #113C63; margin-top: 0;">New Client KYC Submission</h2>
+                <h2 style="color: #113C63; margin-top: 0;">New Client Onboarding Submission</h2>
                 <hr style="border: 0; border-top: 2px solid #B5253C; margin-bottom: 20px;">
 
                 <h3 style="color: #B5253C; margin-bottom: 10px;">Client Details</h3>
@@ -205,7 +210,7 @@ async function sendEmailNotification(review) {
                     </tr>
                     <tr>
                         <td style="padding: 5px 0;"><strong>Deployment Officer:</strong></td>
-                        <td>${escapeHtml(review.deploymentOfficer)}</td>
+                        <td>${escapeHtml(review.deploymentOfficer || 'N/A')}</td>
                     </tr>
                 </table>
 
@@ -221,7 +226,7 @@ async function sendEmailNotification(review) {
                 ` : ''}
 
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                <p style="font-size: 0.8rem; color: #777;">Submitted securely via Hogan Guards KYC Portal at: ${review.timestamp}</p>
+                <p style="font-size: 0.8rem; color: #777;">Submitted securely via Hogan Guards Onboarding Portal at: ${review.timestamp}</p>
             </div>
         `
     };
@@ -239,12 +244,12 @@ async function sendClientConfirmation(review) {
                 <h2 style="color: #113C63; margin-top: 0;">Thank You, ${escapeHtml(review.clientName)}!</h2>
                 <hr style="border: 0; border-top: 2px solid #B5253C; margin-bottom: 20px;">
 
-                <p>We've received your KYC details and will proceed with deploying your security guards as scheduled.</p>
+                <p>We've received your onboarding details and will proceed with deploying your security guards as scheduled.</p>
 
                 <p>Our team will be in touch if any further information is needed ahead of the deployment date.</p>
 
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                <p style="font-size: 0.8rem; color: #777;">Hogan Guards Client KYC Portal</p>
+                <p style="font-size: 0.8rem; color: #777;">Hogan Guards Client Onboarding Portal</p>
             </div>
         `
     };

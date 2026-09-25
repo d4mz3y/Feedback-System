@@ -1,14 +1,15 @@
-# Client KYC Portal
+# Client Onboarding and Referral Portal
 
 A premium single-page web application that replaces the paper Know Your Client (KYC)
 form used when onboarding a new client for guard deployment.
 
 ## Features
 
-- **Interactive KYC Form**:
+- **Interactive Onboarding Form**:
   - Client Details (Name, Address, Email, Phone with country code).
-  - Deployment Specifics (Number of guards, Date of deployment, Deployment officer).
-  - How the client found HoganGuards (Advert, Website, Referral, Social Media, Other).
+  - Deployment Specifics (Number of guards, Date of deployment, Deployment officer — optional).
+  - How the client found HoganGuards (Advert, Website, Referral, Social Media, Other) —
+    selecting "Referred by Client" reveals a field for the referring staff member's name.
   - Real-time field validation and reactive submit button.
 - **Automated Notifications**: Sends a professionally formatted HTML email summary to designated administrators upon every submission, plus a confirmation email to the client.
 - **Responsive Design**: Works perfectly on desktop and mobile devices.

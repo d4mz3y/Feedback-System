@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hogan Guards - Client KYC Form</title>
+    <title>Hogan Guards - Client Onboarding and Referral Form</title>
     <link rel="icon" type="image/png" href="hogan-favicon-transparent.png">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,7 +22,7 @@
             <ul class="nav-links">
                 <li><a href="https://hoganguards.com/" target="_blank">Home</a></li>
                 <li><a href="#about">About</a></li>
-                <li><a href="#kyc-form">Submit KYC Form</a></li>
+                <li><a href="#onboarding-form">Submit Onboarding Form</a></li>
             </ul>
         </nav>
     </header>
@@ -31,10 +31,10 @@
         <section id="hero" class="hero">
             <div class="container">
                 <div class="hero-content">
-                    <h1>Client KYC Form</h1>
+                    <h1>Client Onboarding and Referral Form</h1>
                     <p>Please provide your details below so we can properly onboard you and deploy your
                         security guards.</p>
-                    <a href="#kyc-form" class="btn btn-primary">Fill KYC Form</a>
+                    <a href="#onboarding-form" class="btn btn-primary">Fill Onboarding Form</a>
                 </div>
             </div>
         </section>
@@ -48,10 +48,10 @@
             </div>
         </section>
 
-        <section id="kyc-form" class="feedback">
+        <section id="onboarding-form" class="feedback">
             <div class="container">
                 <div class="feedback-card">
-                    <h2 class="text-center">Know Your Client (KYC) Form</h2>
+                    <h2 class="text-center">Client Onboarding and Referral Form</h2>
                     <form id="feedbackForm">
                         <div class="form-group">
                             <label for="clientName">Name of Client</label>
@@ -118,24 +118,24 @@
                                 placeholder="Please specify" class="hidden" style="margin-top: 10px;">
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group hidden" id="referredByStaffGroup">
                             <label for="referredByStaff">Name of Staff Who Referred You</label>
-                            <input type="text" id="referredByStaff" name="referredByStaff" required>
+                            <input type="text" id="referredByStaff" name="referredByStaff">
                         </div>
 
                         <div class="form-group">
                             <label for="deploymentOfficer">Name of Deployment Officer</label>
                             <input type="text" id="deploymentOfficer" name="deploymentOfficer"
-                                placeholder="Enter name of the deployment officer" required>
+                                placeholder="Optional — if known">
                         </div>
 
                         <div class="form-group">
                             <label for="generalComment">General Comment on Deployment</label>
                             <textarea id="generalComment" name="generalComment" rows="4"
-                                placeholder="Any additional notes about the deployment..." required></textarea>
+                                placeholder="Optional — any additional notes about the deployment..."></textarea>
                         </div>
 
-                        <button type="submit" class="btn btn-submit" id="submitBtn" disabled>Submit KYC Form</button>
+                        <button type="submit" class="btn btn-submit" id="submitBtn" disabled>Submit Onboarding Form</button>
                     </form>
                     <div id="responseMessage" class="hidden"></div>
                 </div>

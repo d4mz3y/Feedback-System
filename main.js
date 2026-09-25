@@ -5,12 +5,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const emailInput = document.getElementById('clientEmail');
     const emailError = document.getElementById('emailError');
-    const inputs = feedbackForm.querySelectorAll('input[required], textarea[required]');
+    const allFields = feedbackForm.querySelectorAll('input, textarea');
 
     const howFoundOutOther = document.getElementById('howFoundOutOther');
     const howFoundOutRadios = feedbackForm.querySelectorAll('input[name="howFoundOut"]');
+    const referredByStaffGroup = document.getElementById('referredByStaffGroup');
+    const referredByStaff = document.getElementById('referredByStaff');
 
-    // Show the "please specify" field only when "Others" is selected
+    // Show the "please specify" field only when "Others" is selected, and the
+    // referring-staff field only when "Referred by Client" is selected —
+    // a staff member isn't relevant for Website, Advert, or the other options.
     howFoundOutRadios.forEach(radio => {
         radio.addEventListener('change', () => {
             howFoundOutRadios.forEach(r => r.closest('.radio-option').classList.toggle('selected', r.checked));
@@ -23,6 +27,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 howFoundOutOther.required = false;
                 howFoundOutOther.value = '';
             }
+
+            if (radio.value === 'Referred by Client' && radio.checked) {
+                referredByStaffGroup.classList.remove('hidden');
+                referredByStaff.required = true;
+            } else if (radio.checked) {
+                referredByStaffGroup.classList.add('hidden');
+                referredByStaff.required = false;
+                referredByStaff.value = '';
+            }
+
             validateForm();
         });
     });
@@ -46,18 +60,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Form Interactivity Logic
-    inputs.forEach(input => {
-        input.addEventListener('input', validateForm);
+    allFields.forEach(field => {
+        field.addEventListener('input', validateForm);
     });
 
     function validateForm() {
         let isValid = true;
 
-        // Check all required fields
-        inputs.forEach(input => {
-            if (input.type === 'radio') {
-                if (!feedbackForm.querySelector(`input[name="${input.name}"]:checked`)) isValid = false;
-            } else if (!input.value.trim()) {
+        // Re-check which fields are currently required — some (like the
+        // referring-staff name) toggle required/optional based on other answers.
+        const requiredFields = feedbackForm.querySelectorAll('input[required], textarea[required]');
+        requiredFields.forEach(field => {
+            if (field.type === 'radio') {
+                if (!feedbackForm.querySelector(`input[name="${field.name}"]:checked`)) isValid = false;
+            } else if (!field.value.trim()) {
                 isValid = false;
             }
         });
@@ -101,10 +117,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                showMessage("Thank you! Your KYC form has been submitted successfully.", "success");
+                showMessage("Thank you! Your form has been submitted successfully.", "success");
                 feedbackForm.reset();
                 howFoundOutOther.classList.add('hidden');
                 howFoundOutOther.required = false;
+                referredByStaffGroup.classList.add('hidden');
+                referredByStaff.required = false;
+                howFoundOutRadios.forEach(r => r.closest('.radio-option').classList.remove('selected'));
                 validateForm();
             } else {
                 throw new Error('Server returned an error');
@@ -113,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error:', error);
             showMessage("Oops! Something went wrong. Please try again later.", "error");
         } finally {
-            submitBtn.innerText = 'Submit KYC Form';
+            submitBtn.innerText = 'Submit Onboarding Form';
             validateForm();
         }
     });
