@@ -154,6 +154,10 @@
     padding: 20px;
 }
 
+.admin-modal.hidden {
+    display: none;
+}
+
 .admin-modal-card {
     background: var(--white);
     padding: 30px;
