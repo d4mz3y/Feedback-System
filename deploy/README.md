@@ -72,6 +72,36 @@ git pull
 docker compose up -d --build
 ```
 
+## 5. Admin dashboard, initial accounts, and backups
+
+The admin dashboard (`/admin`) is enabled automatically once `MONGODB_URI` is set in
+`.env`. Two one-time steps to get it working:
+
+```bash
+# Generate a session secret and add it to .env
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+# paste the output as SESSION_SECRET in .env
+
+# Rebuild so the container picks up the new .env, then create the 5 admin accounts
+docker compose up -d --build
+docker compose exec feedback-app node scripts/seed-admins.js
+```
+
+The seed script prints a temporary password for each new account — share each one
+with its owner over a channel other than email (e.g. a call, or in person) and have
+them change it via the "Change Password" button after their first login. Re-running
+the script is safe; it skips any email that already has an account.
+
+**Backups**: `scripts/backup.js` dumps all submissions to a local JSON file (rotated
+after 30 days) and emails a copy to `EMAIL_USER` for off-box redundancy. Set it up as
+a daily cron job on the server:
+
+```bash
+crontab -e
+# add this line to run daily at 2am:
+0 2 * * * cd /home/ubuntu/Feedback-System && docker compose exec -T feedback-app node scripts/backup.js >> backup.log 2>&1
+```
+
 ## Notes
 
 - The app container only listens on `127.0.0.1:3001` on the host — nginx is the only
@@ -79,3 +109,5 @@ docker compose up -d --build
 - `.env` is never committed — it's created directly on the server from `.env.example`.
 - Rate limiting (5 submissions/IP/15min) is enforced in the app itself, no extra
   nginx config needed for that.
+- The admin dashboard is read-only by design — submissions can't be edited or
+  deleted through it, so original client answers never change after submission.

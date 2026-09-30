@@ -5,6 +5,10 @@ const cors = require('cors');
 const path = require('path');
 const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+const Feedback = require('./models/Feedback');
+const AdminUser = require('./models/AdminUser');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -20,26 +24,8 @@ if (MONGODB_URI) {
         .then(() => console.log('Connected to MongoDB Atlas'))
         .catch(err => console.error('MongoDB connection error:', err));
 } else {
-    console.warn('MONGODB_URI not found in environment variables. Database storage is disabled.');
+    console.warn('MONGODB_URI not found in environment variables. Database storage and the admin dashboard are disabled.');
 }
-
-// Define Onboarding/Referral Schema
-const feedbackSchema = new mongoose.Schema({
-    clientName: String,
-    clientAddress: String,
-    numGuards: Number,
-    deploymentDate: String,
-    clientEmail: String,
-    phoneNumber: String,
-    howFoundOut: String,
-    howFoundOutOther: String,
-    referredByStaff: String,
-    deploymentOfficer: String,
-    generalComment: String,
-    timestamp: { type: Date, default: Date.now }
-});
-
-const Feedback = mongoose.model('Feedback', feedbackSchema);
 
 function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -55,6 +41,23 @@ function escapeHtml(value) {
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Sessions for the admin dashboard — only set up if a database is
+// configured, since sessions are stored in MongoDB.
+if (MONGODB_URI) {
+    app.use(session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false,
+        store: MongoStore.create({ mongoUrl: MONGODB_URI, collectionName: 'sessions' }),
+        cookie: {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            maxAge: 8 * 60 * 60 * 1000 // 8 hours
+        }
+    }));
+}
 
 // Request logger
 app.use((req, res, next) => {
@@ -153,6 +156,110 @@ app.post('/api/feedback', feedbackLimiter, async (req, res) => {
 
     res.status(200).json({ message: 'Feedback received' });
 });
+
+// ============ Admin Dashboard ============
+// Read-only by design: submissions cannot be edited or deleted through this
+// dashboard, so the original answers a client submitted always stay exactly
+// as they were.
+
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many login attempts. Please try again later.' }
+});
+
+function requireAuth(req, res, next) {
+    if (req.session && req.session.adminId) {
+        return next();
+    }
+    res.status(401).json({ error: 'Not authenticated' });
+}
+
+if (MONGODB_URI) {
+    app.get('/admin', (req, res) => {
+        res.sendFile(path.join(__dirname, 'admin-dashboard.html'));
+    });
+
+    app.get('/admin/login', (req, res) => {
+        res.sendFile(path.join(__dirname, 'admin-login.html'));
+    });
+
+    app.post('/admin/api/login', loginLimiter, async (req, res) => {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required' });
+        }
+
+        const user = await AdminUser.findOne({ email: email.toLowerCase().trim() });
+        if (!user || !(await user.verifyPassword(password))) {
+            return res.status(401).json({ error: 'Invalid email or password' });
+        }
+
+        req.session.adminId = user._id.toString();
+        res.json({ name: user.name, email: user.email });
+    });
+
+    app.post('/admin/api/logout', (req, res) => {
+        req.session.destroy(() => res.json({ ok: true }));
+    });
+
+    app.get('/admin/api/me', requireAuth, async (req, res) => {
+        const user = await AdminUser.findById(req.session.adminId).select('name email');
+        if (!user) return res.status(401).json({ error: 'Not authenticated' });
+        res.json({ name: user.name, email: user.email });
+    });
+
+    app.post('/admin/api/change-password', requireAuth, async (req, res) => {
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword || newPassword.length < 10) {
+            return res.status(400).json({ error: 'New password must be at least 10 characters' });
+        }
+
+        const user = await AdminUser.findById(req.session.adminId);
+        if (!user || !(await user.verifyPassword(currentPassword))) {
+            return res.status(401).json({ error: 'Current password is incorrect' });
+        }
+
+        user.passwordHash = await AdminUser.hashPassword(newPassword);
+        await user.save();
+        res.json({ ok: true });
+    });
+
+    app.get('/admin/api/submissions', requireAuth, async (req, res) => {
+        const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+        const limit = 50;
+        const [submissions, total] = await Promise.all([
+            Feedback.find().sort({ timestamp: -1 }).skip((page - 1) * limit).limit(limit),
+            Feedback.countDocuments()
+        ]);
+        res.json({ submissions, total, page, pages: Math.ceil(total / limit) });
+    });
+
+    app.get('/admin/api/export.csv', requireAuth, async (req, res) => {
+        const submissions = await Feedback.find().sort({ timestamp: -1 });
+        const columns = [
+            'timestamp', 'clientName', 'clientAddress', 'clientEmail', 'phoneNumber',
+            'numGuards', 'deploymentDate', 'howFoundOut', 'howFoundOutOther',
+            'referredByStaff', 'deploymentOfficer', 'generalComment'
+        ];
+
+        const escapeCsv = (value) => {
+            const str = String(value ?? '');
+            return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+        };
+
+        const rows = [columns.join(',')];
+        submissions.forEach(doc => {
+            rows.push(columns.map(col => escapeCsv(col === 'timestamp' ? doc.timestamp.toISOString() : doc[col])).join(','));
+        });
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="submissions-${new Date().toISOString().slice(0, 10)}.csv"`);
+        res.send(rows.join('\n'));
+    });
+}
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.dreamhost.com',
