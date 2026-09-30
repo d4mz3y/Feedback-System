@@ -8,3 +8,7 @@ services:
     ports:
       # Bind to localhost only — nginx handles TLS and public exposure.
       - "127.0.0.1:3001:3001"
+    volumes:
+      # Persist backups on the host — otherwise they'd live only in the
+      # container's writable layer and be lost on every rebuild.
+      - ./backups:/app/backups
