@@ -25,6 +25,20 @@
     height: 60px;
 }
 
+.admin-remember-me label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.admin-remember-me input {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
 .admin-error {
     margin-top: 15px;
     padding: 12px 15px;

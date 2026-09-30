@@ -187,7 +187,7 @@ if (MONGODB_URI) {
     });
 
     app.post('/admin/api/login', loginLimiter, async (req, res) => {
-        const { email, password } = req.body;
+        const { email, password, rememberMe } = req.body;
         if (!email || !password) {
             return res.status(400).json({ error: 'Email and password are required' });
         }
@@ -198,6 +198,9 @@ if (MONGODB_URI) {
         }
 
         req.session.adminId = user._id.toString();
+        if (rememberMe) {
+            req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+        }
         res.json({ name: user.name, email: user.email });
     });
 
