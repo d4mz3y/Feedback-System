@@ -27,6 +27,10 @@ if (MONGODB_URI) {
     console.warn('MONGODB_URI not found in environment variables. Database storage and the admin dashboard are disabled.');
 }
 
+// Express 4 doesn't catch rejected promises from async handlers; without this,
+// a database outage would crash the whole process instead of returning an error.
+const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+
 function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, (char) => ({
         '&': '&amp;',
@@ -186,7 +190,7 @@ if (MONGODB_URI) {
         res.sendFile(path.join(__dirname, 'admin-login.html'));
     });
 
-    app.post('/admin/api/login', loginLimiter, async (req, res) => {
+    app.post('/admin/api/login', loginLimiter, asyncHandler(async (req, res) => {
         const { email, password, rememberMe } = req.body;
         if (!email || !password) {
             return res.status(400).json({ error: 'Email and password are required' });
@@ -202,19 +206,19 @@ if (MONGODB_URI) {
             req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
         }
         res.json({ name: user.name, email: user.email });
-    });
+    }));
 
     app.post('/admin/api/logout', (req, res) => {
         req.session.destroy(() => res.json({ ok: true }));
     });
 
-    app.get('/admin/api/me', requireAuth, async (req, res) => {
+    app.get('/admin/api/me', requireAuth, asyncHandler(async (req, res) => {
         const user = await AdminUser.findById(req.session.adminId).select('name email');
         if (!user) return res.status(401).json({ error: 'Not authenticated' });
         res.json({ name: user.name, email: user.email });
-    });
+    }));
 
-    app.post('/admin/api/change-password', requireAuth, async (req, res) => {
+    app.post('/admin/api/change-password', requireAuth, asyncHandler(async (req, res) => {
         const { currentPassword, newPassword } = req.body;
         if (!currentPassword || !newPassword || newPassword.length < 10) {
             return res.status(400).json({ error: 'New password must be at least 10 characters' });
@@ -228,9 +232,9 @@ if (MONGODB_URI) {
         user.passwordHash = await AdminUser.hashPassword(newPassword);
         await user.save();
         res.json({ ok: true });
-    });
+    }));
 
-    app.get('/admin/api/submissions', requireAuth, async (req, res) => {
+    app.get('/admin/api/submissions', requireAuth, asyncHandler(async (req, res) => {
         const page = Math.max(1, parseInt(req.query.page, 10) || 1);
         const limit = 50;
         const [submissions, total] = await Promise.all([
@@ -238,9 +242,9 @@ if (MONGODB_URI) {
             Feedback.countDocuments()
         ]);
         res.json({ submissions, total, page, pages: Math.ceil(total / limit) });
-    });
+    }));
 
-    app.get('/admin/api/export.csv', requireAuth, async (req, res) => {
+    app.get('/admin/api/export.csv', requireAuth, asyncHandler(async (req, res) => {
         const submissions = await Feedback.find().sort({ timestamp: -1 });
         const columns = [
             'timestamp', 'clientName', 'clientAddress', 'clientEmail', 'phoneNumber',
@@ -261,6 +265,12 @@ if (MONGODB_URI) {
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="submissions-${new Date().toISOString().slice(0, 10)}.csv"`);
         res.send(rows.join('\n'));
+    }));
+
+    // Return a clean error (e.g. when the database is unreachable) instead of crashing.
+    app.use('/admin/api', (err, req, res, next) => {
+        console.error('Admin API error:', err.message);
+        res.status(503).json({ error: 'Service temporarily unavailable. Please try again shortly.' });
     });
 }
 
