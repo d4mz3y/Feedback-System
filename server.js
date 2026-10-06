@@ -108,8 +108,8 @@ app.post('/api/feedback', feedbackLimiter, async (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // A staff member is only relevant when the client says they were
-    // referred by one — not for Website, Advert, or the other options.
+    // The referrer's name is only relevant when the client says they were
+    // referred by a client — not for Website, Advert, or the other options.
     if (howFoundOut === 'Referred by Client' && !referredByStaff) {
         return res.status(400).json({ error: 'Missing required fields' });
     }

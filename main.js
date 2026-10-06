@@ -13,8 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const referredByStaff = document.getElementById('referredByStaff');
 
     // Show the "please specify" field only when "Others" is selected, and the
-    // referring-staff field only when "Referred by Client" is selected —
-    // a staff member isn't relevant for Website, Advert, or the other options.
+    // referrer-name field only when "Referred by Client" is selected —
+    // it isn't relevant for Website, Advert, or the other options.
+    // (The field/column is still named referredByStaff for backward compatibility.)
     howFoundOutRadios.forEach(radio => {
         radio.addEventListener('change', () => {
             howFoundOutRadios.forEach(r => r.closest('.radio-option').classList.toggle('selected', r.checked));
@@ -68,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let isValid = true;
 
         // Re-check which fields are currently required — some (like the
-        // referring-staff name) toggle required/optional based on other answers.
+        // referrer name) toggle required/optional based on other answers.
         const requiredFields = feedbackForm.querySelectorAll('input[required], textarea[required]');
         requiredFields.forEach(field => {
             if (field.type === 'radio') {

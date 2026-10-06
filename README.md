@@ -9,7 +9,7 @@ form used when onboarding a new client for guard deployment.
   - Client Details (Name, Address, Email, Phone with country code).
   - Deployment Specifics (Number of guards, Date of deployment, Deployment officer — optional).
   - How the client found HoganGuards (Advert, Website, Referral, Social Media, Other) —
-    selecting "Referred by Client" reveals a field for the referring staff member's name.
+    selecting "Referred by Client" reveals a field for the name of the client who referred them.
   - Real-time field validation and reactive submit button.
 - **Automated Notifications**: Sends a professionally formatted HTML email summary to designated administrators upon every submission, plus a confirmation email to the client.
 - **Responsive Design**: Works perfectly on desktop and mobile devices.
