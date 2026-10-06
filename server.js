@@ -104,7 +104,7 @@ app.post('/api/feedback', feedbackLimiter, async (req, res) => {
     } = req.body;
 
     if (!clientName || !clientAddress || !clientEmail || !phoneNumber || !numGuards
-        || !deploymentDate || !howFoundOut) {
+        || !deploymentDate || !howFoundOut || !deploymentOfficer) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
