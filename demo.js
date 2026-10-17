@@ -13,7 +13,7 @@
   };
   document.addEventListener('DOMContentLoaded', function () {
     var bar = document.createElement('div');
-    bar.textContent = 'Live demo — submissions are simulated; nothing is stored or emailed.';
+    bar.textContent = 'Live demo: submissions are simulated; nothing is stored or emailed.';
     bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#111;color:#f5f5f5;font:500 13px Inter,sans-serif;text-align:center;padding:10px 16px;';
     document.body.appendChild(bar);
   });
